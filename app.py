@@ -521,14 +521,8 @@ def main():
 
             else:  # 퀴즈 답변 후
                 if st.session_state.news_unlocked:
-                    # 정답 → 실제 역사 뉴스 fetch
-                    year_month_label = game.current_date.strftime('%Y년 %#m월') \
-                        if hasattr(game.current_date, 'strftime') else game.current_date.strftime('%Y년 %-m월')
-                    # Windows 호환: %#m, Linux: %-m
-                    try:
-                        year_month_label = game.current_date.strftime('%Y년 %#m월')
-                    except ValueError:
-                        year_month_label = game.current_date.strftime('%Y년 %-m월')
+                    # 플랫폼 독립적인 연월 문자열 생성 (Windows/Linux 모두 호환)
+                    year_month_label = f"{game.current_date.year}년 {game.current_date.month}월"
 
                     st.success("🎉 정답입니다! 이번 달 주요 경제 뉴스를 불러옵니다...")
 
@@ -579,7 +573,7 @@ def main():
                     trade_shares = make_shares_slider(
                         "거래 수량",
                         team, trade_ticker, game,
-                        key=f"shares_{team.name}_{game.current_turn}"
+                        key=f"shares_{team.name}_{trade_ticker}_{game.current_turn}"
                     )
 
                     # 예상 금액 미리 표시
@@ -595,10 +589,16 @@ def main():
                     t_btn1, t_btn2 = st.columns(2)
                     if t_btn1.button("매수 (Buy)", key=f"buy_{team.name}"):
                         ok, msg = game.buy_stock(team, trade_ticker, trade_shares)
-                        st.success(msg) if ok else st.error(msg)
+                        if ok:
+                            st.success(msg)
+                        else:
+                            st.error(msg)
                     if t_btn2.button("매도 (Sell)", key=f"sell_{team.name}"):
                         ok, msg = game.sell_stock(team, trade_ticker, trade_shares)
-                        st.success(msg) if ok else st.error(msg)
+                        if ok:
+                            st.success(msg)
+                        else:
+                            st.error(msg)
 
                 # ── 환전 (환율 표시 추가) ──
                 with exch_col:
@@ -615,10 +615,16 @@ def main():
                     e_btn1, e_btn2 = st.columns(2)
                     if e_btn1.button("달러 매수 →", key=f"buy_usd_{team.name}"):
                         ok, msg = game.exchange_currency(team, 'KRW_TO_USD', exch_amount)
-                        st.success(msg) if ok else st.error(msg)
+                        if ok:
+                            st.success(msg)
+                        else:
+                            st.error(msg)
                     if e_btn2.button("← 달러 매도", key=f"sell_usd_{team.name}"):
                         ok, msg = game.exchange_currency(team, 'USD_TO_KRW', exch_amount)
-                        st.success(msg) if ok else st.error(msg)
+                        if ok:
+                            st.success(msg)
+                        else:
+                            st.error(msg)
 
         # ── 다음 턴 ──
         st.markdown("---")
