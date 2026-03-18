@@ -74,39 +74,33 @@ TICKER_NAMES = {
 }
 
 def ticker_label(ticker: str) -> str:
-    """selectbox에 표시할 한글명 + 티커 문자열 반환"""
     name = TICKER_NAMES.get(ticker, ticker)
     return f"{name} ({ticker})"
 
-
 # ==========================================
-# 1. 실제 역사 뉴스 생성 (Anthropic API)
+# 1. 오프라인 과거 뉴스 생성기 (API 불필요)
 # ==========================================
-@st.cache_data(ttl=86400, show_spinner=False)
-def fetch_historical_news(year_month_label: str, api_key: str) -> str:
-    """
-    year_month_label 예: '2024년 1월'
-    퀴즈 정답 시 호출 — 해당 월의 실제 경제 이슈 5가지를 반환.
-    결과는 하루 동안 캐시됨(같은 날짜·API키 조합 재호출 방지).
-    """
-    try:
-        import anthropic
-        client = anthropic.Anthropic(api_key=api_key)
-        prompt = (
-            f"당신은 경제·금융 전문 애널리스트입니다.\n"
-            f"'{year_month_label}'에 실제로 있었던 주요 경제·금융 이슈를 5가지 알려주세요.\n"
-            f"투자자가 다음 달 주식 투자 전략을 세우는 데 도움이 되도록,\n"
-            f"미국 증시와 한국 증시 이슈를 균형 있게, 실제 사건 기반으로 작성하세요.\n"
-            f"각 항목은 📌 이모지로 시작하고 한 줄로만 작성하세요."
-        )
-        msg = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=600,
-            messages=[{"role": "user", "content": prompt}]
-        )
-        return msg.content[0].text
-    except Exception as e:
-        return f"⚠️ 뉴스 로딩 실패: {e}\n(API 키를 확인하거나 사이드바에서 다시 입력해주세요)"
+def get_mock_news(current_date):
+    year = current_date.year
+    
+    # 연도별 굵직한 실제 경제 테마 적용
+    if year <= 2002:
+        news_list = ["IT 버블 붕괴 여파 지속, 기술주 실적 악화", "신흥국 증시 변동성 확대", "투자자들 안전 자산 선호 심리 강화"]
+    elif year in [2008, 2009]:
+        news_list = ["글로벌 금융 위기 공포 확산, 증시 패닉", "각국 중앙은행 긴급 유동성 공급 및 금리 인하", "부동산 시장 침체로 인한 실물 경제 타격 우려"]
+    elif year in [2020, 2021]:
+        news_list = ["전염병 팬데믹 선언, 글로벌 공급망 마비", "비대면(언택트), 바이오 관련 기술주 테마 급등", "각국 전례 없는 양적 완화 정책으로 유동성 폭발"]
+    elif year >= 2022:
+        news_list = ["글로벌 인플레이션 압력 심화, 미 연준 금리 인상 기조", "원자재 및 에너지 가격 폭등으로 기업 비용 부담 증가", "환율 변동성 극대화, 수출 기업 단기 실적 변수"]
+    else:
+        # 일반적인 경제 뉴스 풀
+        news_list = [
+            random.choice(["주요국 중앙은행 금리 동결 시사, 시장 안도감", "외국인 투자자, 아시아 신흥국 우량주 매수세 유입", "글로벌 거시 경제 지표 혼조세, 관망 심리 뚜렷"]),
+            random.choice(["반도체·IT 업종 하반기 실적 호조 기대감", "유가 등 에너지 가격 상승으로 인한 소비 위축 우려", "달러 환율 변동성 확대, 수출 기업과 수입 기업 희비 교차"]),
+            random.choice(["기관 투자자 포트폴리오 재편 움직임 포착", "친환경·신재생 에너지 관련주 정부 정책 수혜 기대", "내수 소비 심리 점진적 회복세 전환 조짐"])
+        ]
+    
+    return "\n\n".join([f"📌 {news}" for news in news_list])
 
 
 # ==========================================
@@ -146,15 +140,8 @@ class MockInvestmentGame:
         self.current_turn = 1
         self.teams = [Team(name) for name in team_names]
 
-        self.start_dates_pool = [
-            '2001-01-01', '2005-05-01', '2010-01-01',
-            '2015-05-01', '2020-01-01', '2023-01-01'
-        ]
-        chosen_date = (
-            start_date_choice
-            if start_date_choice in self.start_dates_pool
-            else random.choice(self.start_dates_pool)
-        )
+        self.start_dates_pool = ['2001-01-01', '2005-05-01', '2010-01-01', '2015-05-01', '2020-01-01', '2023-01-01']
+        chosen_date = start_date_choice if start_date_choice in self.start_dates_pool else random.choice(self.start_dates_pool)
         self.current_date = datetime.strptime(chosen_date, '%Y-%m-%d')
 
         self.us_tickers = [
@@ -275,370 +262,4 @@ class MockInvestmentGame:
         return False, f"[{team.name}] 잔고가 부족합니다."
 
     def sell_stock(self, team, ticker, shares):
-        if ticker not in team.portfolio or team.portfolio[ticker]['shares'] < shares:
-            return False, f"[{team.name}] 보유 수량이 부족합니다."
-        price = self.get_price(ticker, self.current_date)
-        is_kr = ticker.endswith('.KS')
-        revenue = price * shares
-        team.portfolio[ticker]['shares'] -= shares
-        if team.portfolio[ticker]['shares'] == 0:
-            del team.portfolio[ticker]
-        if is_kr:
-            team.krw_balance += revenue
-        else:
-            team.usd_balance += revenue
-        return True, f"[{team.name}] {ticker_label(ticker)} {shares}주 매도 완료!"
-
-    def exchange_currency(self, team, direction, amount_usd):
-        rate = self.get_price('USDKRW=X', self.current_date)
-        if rate == 0:
-            rate = 1300.0
-        if direction == 'KRW_TO_USD':
-            applied = rate * 1.05
-            required_krw = amount_usd * applied
-            if team.krw_balance >= required_krw:
-                team.krw_balance -= required_krw
-                team.usd_balance += amount_usd
-                return True, f"{amount_usd:,.0f}달러 구매 완료 (적용환율: {applied:,.2f}원/달러)"
-            return False, "원화 잔고가 부족합니다."
-        elif direction == 'USD_TO_KRW':
-            applied = rate * 0.95
-            received = amount_usd * applied
-            if team.usd_balance >= amount_usd:
-                team.usd_balance -= amount_usd
-                team.krw_balance += received
-                return True, f"{received:,.0f}원 획득 완료 (적용환율: {applied:,.2f}원/달러)"
-            return False, "달러 잔고가 부족합니다."
-
-    def check_bankruptcy(self, team):
-        if team.get_total_value_krw(self.get_price, self.current_date) < 23_000_000:
-            team.is_bankrupt = True
-
-    def next_turn(self):
-        for team in self.teams:
-            if not team.is_bankrupt:
-                self.check_bankruptcy(team)
-        self.current_turn += 1
-        self.current_date += relativedelta(months=1)
-
-
-# ==========================================
-# 4. UI 헬퍼 함수
-# ==========================================
-def display_portfolio_ui(team, get_price_func, current_date):
-    if not team.portfolio:
-        st.info("현재 보유 중인 주식이 없습니다.")
-        return
-    rows = []
-    for ticker, info in team.portfolio.items():
-        shares = info['shares']
-        avg_price = info['avg_price']
-        cur_price = get_price_func(ticker, current_date)
-        ret = ((cur_price - avg_price) / avg_price * 100) if avg_price > 0 else 0
-        currency = "KRW" if ticker.endswith('.KS') else "USD"
-        rows.append({
-            "종목명": ticker_label(ticker),
-            "수량": shares,
-            "평단가": f"{avg_price:,.0f}원" if currency == "KRW" else f"${avg_price:,.2f}",
-            "현재가": f"{cur_price:,.0f}원" if currency == "KRW" else f"${cur_price:,.2f}",
-            "수익률": f"{ret:+.2f}%",
-        })
-    df = pd.DataFrame(rows)
-
-    def color_return(val):
-        if '+' in val:
-            return 'color: red'
-        elif '-' in val:
-            return 'color: blue'
-        return 'color: black'
-
-    try:
-        styled = df.style.map(color_return, subset=['수익률'])
-    except AttributeError:
-        styled = df.style.applymap(color_return, subset=['수익률'])
-    st.dataframe(styled, use_container_width=True, hide_index=True)
-
-
-def show_exchange_rate_box(rate: float):
-    """현재 환율과 매수/매도 적용 환율을 정보 박스로 표시"""
-    if rate > 0:
-        st.info(
-            f"💱 **현재 USD/KRW 환율: {rate:,.2f} 원**  \n"
-            f"달러 매수 시 적용: **{rate * 1.05:,.2f}원** (+5% 수수료)  │  "
-            f"달러 매도 시 적용: **{rate * 0.95:,.2f}원** (-5% 수수료)"
-        )
-    else:
-        st.warning("⚠️ 환율 데이터를 불러올 수 없습니다. 기본값 1,300원으로 처리됩니다.")
-
-
-def make_shares_slider(label: str, team, ticker: str, game, key: str) -> int:
-    """
-    보유 잔고 기반으로 최대 매수 가능 수량을 계산하고
-    슬라이더 step을 자동 조정해서 반환합니다.
-    """
-    price = game.get_price(ticker, game.current_date)
-    is_kr = ticker.endswith('.KS')
-    balance = team.krw_balance if is_kr else team.usd_balance
-
-    if price > 0:
-        max_buy = max(1, int(balance / price))
-    else:
-        max_buy = 1
-
-    # 슬라이더 range가 너무 넓으면 step을 크게
-    if max_buy >= 10000:
-        step = 100
-    elif max_buy >= 1000:
-        step = 10
-    elif max_buy >= 100:
-        step = 5
-    else:
-        step = 1
-
-    price_str = f"{price:,.0f}원" if is_kr else f"${price:,.2f}"
-    help_txt = f"현재가 {price_str} | 최대 매수 가능: {max_buy:,}주"
-
-    return st.slider(
-        label,
-        min_value=1,
-        max_value=max(1, max_buy),
-        value=1,
-        step=step,
-        key=key,
-        help=help_txt,
-    )
-
-
-# ==========================================
-# 5. Streamlit 메인 앱
-# ==========================================
-def main():
-    st.set_page_config(page_title="글로벌 모의투자 게임", layout="wide")
-    st.title("글로벌 모의투자 보드게임")
-
-    # 사이드바: Anthropic API 키 입력
-    with st.sidebar:
-        st.markdown("### ⚙️ 설정")
-        api_key = st.text_input(
-            "Anthropic API 키 (실시간 뉴스용)",
-            type="password",
-            placeholder="sk-ant-...",
-            help="퀴즈 정답 시 해당 월의 실제 경제 뉴스를 불러오는 데 사용됩니다."
-        )
-        if api_key:
-            st.success("API 키 입력 완료 ✅")
-        else:
-            st.warning("API 키 없이는 뉴스 기능이 비활성화됩니다.")
-
-    if 'game_started' not in st.session_state:
-        st.session_state.game_started = False
-
-    # ── 로비 화면 ────────────────────────────────────────────
-    if not st.session_state.game_started:
-        st.subheader("게임 세팅 로비")
-        with st.form("lobby_form"):
-            st.markdown("#### 1. 게임 기본 설정")
-            col1, col2 = st.columns(2)
-            total_turns = col1.slider("총 게임 길이 (턴/개월)", min_value=8, max_value=18, value=12)
-            start_dates = ['random', '2001-01-01', '2005-05-01', '2010-01-01',
-                           '2015-05-01', '2020-01-01', '2023-01-01']
-            start_date_choice = col2.selectbox("시작 시점 선택", start_dates)
-
-            st.markdown("#### 2. 참가 팀 설정")
-            team_count = st.number_input("참가할 팀 수", min_value=1, max_value=4, value=2)
-            team_names = [
-                st.text_input(f"팀 {i+1} 이름", value=f"Team {i+1}")
-                for i in range(int(team_count))
-            ]
-
-            if st.form_submit_button("게임 시작하기"):
-                with st.spinner('과거 주식 데이터를 불러오는 중입니다... (최대 1~2분 소요)'):
-                    st.session_state.game = MockInvestmentGame(team_names, total_turns, start_date_choice)
-                    st.session_state.game.load_market_data()
-                    st.session_state.game_over = False
-                    st.session_state.quiz_answered = False
-                    st.session_state.news_unlocked = False
-                    st.session_state.current_quiz = (
-                        st.session_state.game.quizzes.pop()
-                        if st.session_state.game.quizzes else None
-                    )
-                    st.session_state.game_started = True
-                st.rerun()
-
-    # ── 본 게임 화면 ─────────────────────────────────────────
-    else:
-        game = st.session_state.game
-
-        if st.sidebar.button("게임 강제 종료 (로비로 돌아가기)"):
-            st.session_state.clear()
-            st.rerun()
-
-        # 게임 종료
-        if st.session_state.get('game_over', False) or game.current_turn > game.total_turns:
-            st.header("🏁 게임이 종료되었습니다!")
-            st.markdown("### 최종 결과")
-            results = [
-                (t.name, t.get_total_value_krw(game.get_price, game.current_date))
-                for t in game.teams
-            ]
-            for name, val in results:
-                st.write(f"**{name}** 총 자산: {val:,.0f} 원")
-            winner = max(results, key=lambda x: x[1])
-            st.success(f"🥇 최종 우승팀은 **{winner[0]}** 입니다!")
-            with st.expander("게임에서 배운 점 확인하기 (경제 지식 브리핑)", expanded=True):
-                st.markdown("""
-                * **환율 변동성(FX Risk):** 미국 주식 투자 시 환율 변동에 따른 환차손과 수수료의 중요성을 체감했습니다.
-                * **거시 경제와 주식 시장:** 퀴즈를 통해 본 경제 상황이 주가에 미치는 영향을 확인했습니다.
-                * **기회비용과 자산 배분:** 제한된 자본으로 현금 보유 vs 주식 투자 결정은 모두 기회비용이었습니다.
-                * **장기 투자와 복리:** 시장의 오르내림 속에서도 우량 자산을 믿고 버티는 투자의 힘을 경험했습니다.
-                """)
-            return
-
-        # 턴 헤더
-        st.header(f"현재 턴: {game.current_turn} / {game.total_turns}")
-        st.subheader(f"📅 현재 날짜: {game.current_date.strftime('%Y년 %m월 %d일')}")
-        st.markdown("---")
-
-        # ── 경제 퀴즈 + 실시간 뉴스 섹션 ──
-        st.subheader("📰 이번 달 경제 퀴즈 & 뉴스")
-        quiz = st.session_state.current_quiz
-
-        if quiz:
-            if not st.session_state.quiz_answered:
-                st.info("✅ 퀴즈를 맞히면 이번 달 실제 핵심 뉴스가 공개됩니다! (기회는 한 번)")
-                st.write(f"**Q. {quiz['question']}**")
-                user_choice = st.radio(
-                    "정답 선택:",
-                    quiz['options'],
-                    index=0,
-                    key=f"quiz_radio_{game.current_turn}"
-                )
-                if st.button("정답 제출"):
-                    selected_num = int(user_choice.split(".")[0])
-                    st.session_state.quiz_answered = True
-                    st.session_state.news_unlocked = (selected_num == quiz['answer'])
-                    st.rerun()
-
-            else:  # 퀴즈 답변 후
-                if st.session_state.news_unlocked:
-                    # 플랫폼 독립적인 연월 문자열 생성 (Windows/Linux 모두 호환)
-                    year_month_label = f"{game.current_date.year}년 {game.current_date.month}월"
-
-                    st.success("🎉 정답입니다! 이번 달 주요 경제 뉴스를 불러옵니다...")
-
-                    if api_key:
-                        with st.spinner("뉴스 로딩 중..."):
-                            news_text = fetch_historical_news(year_month_label, api_key)
-                        st.markdown(f"### 📌 {year_month_label} 주요 경제 뉴스")
-                        st.markdown(news_text)
-                    else:
-                        st.warning("📢 Anthropic API 키를 사이드바에 입력하면 실제 뉴스가 표시됩니다.")
-                else:
-                    st.error("❌ 오답입니다. 이번 달 시장 정보는 공개되지 않습니다.")
-        else:
-            st.write("준비된 퀴즈가 모두 소진되었습니다.")
-
-        st.markdown("---")
-
-        # ── 팀별 대시보드 ──
-        tabs = st.tabs([team.name for team in game.teams])
-        for i, team in enumerate(game.teams):
-            with tabs[i]:
-                if team.is_bankrupt:
-                    st.error("💀 파산한 팀입니다. 자산 가치가 초기 자본의 10% 미만으로 떨어졌습니다.")
-                    continue
-
-                total_val = team.get_total_value_krw(game.get_price, game.current_date)
-                st.metric("총 자산 평가액 (원)", f"{total_val:,.0f}")
-                col1, col2 = st.columns(2)
-                col1.metric("보유 원화 (KRW)", f"{team.krw_balance:,.0f}")
-                col2.metric("보유 달러 (USD)", f"${team.usd_balance:,.2f}")
-
-                st.markdown("##### 📊 현재 포트폴리오")
-                display_portfolio_ui(team, game.get_price, game.current_date)
-                st.markdown("---")
-
-                trade_col, exch_col = st.columns(2)
-
-                # ── 주식 거래 (슬라이더) ──
-                with trade_col:
-                    st.write("**📈 주식 거래**")
-                    trade_ticker = st.selectbox(
-                        "종목 선택",
-                        game.tradeable_tickers,
-                        format_func=ticker_label,       # ← 한글명 표시
-                        key=f"ticker_{team.name}"
-                    )
-
-                    trade_shares = make_shares_slider(
-                        "거래 수량",
-                        team, trade_ticker, game,
-                        key=f"shares_{team.name}_{trade_ticker}_{game.current_turn}"
-                    )
-
-                    # 예상 금액 미리 표시
-                    price_now = game.get_price(trade_ticker, game.current_date)
-                    is_kr_trade = trade_ticker.endswith('.KS')
-                    if price_now > 0:
-                        est = price_now * trade_shares
-                        if is_kr_trade:
-                            st.caption(f"예상 금액: **{est:,.0f} 원**")
-                        else:
-                            st.caption(f"예상 금액: **${est:,.2f}**")
-
-                    t_btn1, t_btn2 = st.columns(2)
-                    if t_btn1.button("매수 (Buy)", key=f"buy_{team.name}"):
-                        ok, msg = game.buy_stock(team, trade_ticker, trade_shares)
-                        if ok:
-                            st.success(msg)
-                        else:
-                            st.error(msg)
-                    if t_btn2.button("매도 (Sell)", key=f"sell_{team.name}"):
-                        ok, msg = game.sell_stock(team, trade_ticker, trade_shares)
-                        if ok:
-                            st.success(msg)
-                        else:
-                            st.error(msg)
-
-                # ── 환전 (환율 표시 추가) ──
-                with exch_col:
-                    st.write("**💱 환전**")
-                    # 현재 환율 표시
-                    cur_rate = game.get_price('USDKRW=X', game.current_date)
-                    show_exchange_rate_box(cur_rate)
-
-                    exch_amount = st.number_input(
-                        "환전 기준 금액 (달러)",
-                        min_value=100.0, step=100.0,
-                        key=f"exch_{team.name}"
-                    )
-                    e_btn1, e_btn2 = st.columns(2)
-                    if e_btn1.button("달러 매수 →", key=f"buy_usd_{team.name}"):
-                        ok, msg = game.exchange_currency(team, 'KRW_TO_USD', exch_amount)
-                        if ok:
-                            st.success(msg)
-                        else:
-                            st.error(msg)
-                    if e_btn2.button("← 달러 매도", key=f"sell_usd_{team.name}"):
-                        ok, msg = game.exchange_currency(team, 'USD_TO_KRW', exch_amount)
-                        if ok:
-                            st.success(msg)
-                        else:
-                            st.error(msg)
-
-        # ── 다음 턴 ──
-        st.markdown("---")
-        if st.button("⏭️ 다음 턴으로 이동 (1개월 후)"):
-            game.next_turn()
-            st.session_state.quiz_answered = False
-            st.session_state.news_unlocked = False
-            st.session_state.current_quiz = (
-                game.quizzes.pop() if game.quizzes else None
-            )
-            if game.current_turn > game.total_turns:
-                st.session_state.game_over = True
-            st.rerun()
-
-
-if __name__ == "__main__":
-    main()
+        if
