@@ -255,6 +255,351 @@ class Team:
 # ==========================================
 # 3. 게임 클래스
 # ==========================================
+QUIZ_POOL = [
+    {"question": "선택으로 인해 포기해야 하는 대안 중 가장 가치 있는 것은?",
+     "options": ["1. 매몰비용", "2. 기회비용", "3. 한계비용"], "answer": 2},
+    {"question": "사람들의 욕망은 무한하지만 자원은 한정된 상태는?",
+     "options": ["1. 희소성", "2. 효율성", "3. 형평성"], "answer": 1},
+    {"question": "가격이 오르면 수요량은 어떻게 될까요?",
+     "options": ["1. 증가한다", "2. 감소한다", "3. 변동 없다"], "answer": 2},
+    {"question": "콜라와 사이다처럼 한 재화 가격 상승 시 다른 재화 수요가 늘어나는 관계는?",
+     "options": ["1. 보완재", "2. 정상재", "3. 대체재"], "answer": 3},
+    {"question": "스마트폰과 충전기처럼 함께 소비할 때 만족감이 커지는 재화는?",
+     "options": ["1. 보완재", "2. 대체재", "3. 열등재"], "answer": 1},
+    {"question": "수요량과 공급량이 일치하여 결정되는 가격은?",
+     "options": ["1. 최고가격", "2. 균형가격", "3. 최저가격"], "answer": 2},
+    {"question": "물가가 지속적으로 오르고 화폐 가치가 떨어지는 현상은?",
+     "options": ["1. 디플레이션", "2. 스태그플레이션", "3. 인플레이션"], "answer": 3},
+    {"question": "인플레이션 시 유리한 사람은?",
+     "options": ["1. 현금 보유자", "2. 돈을 빌린 사람", "3. 돈을 빌려준 사람"], "answer": 2},
+    {"question": "물가가 지속적으로 하락하며 경제가 침체되는 현상은?",
+     "options": ["1. 인플레이션", "2. 디플레이션", "3. 리디노미네이션"], "answer": 2},
+    {"question": "중앙은행이 통화량을 줄이려 할 때 취할 행동은?",
+     "options": ["1. 기준금리 인상", "2. 기준금리 인하", "3. 세금 감면"], "answer": 1},
+    {"question": "외국 화폐에 대한 자국 화폐의 교환 비율은?",
+     "options": ["1. 금리", "2. 물가", "3. 환율"], "answer": 3},
+    {"question": "원/달러 환율이 올랐을 때 유리한 사람은?",
+     "options": ["1. 해외 여행객", "2. 수입업자", "3. 수출업자"], "answer": 3},
+    {"question": "원/달러 환율이 떨어졌을 때 피해를 볼 사람은?",
+     "options": ["1. 유학생 부모", "2. 부품 수입 기업", "3. 수출 기업"], "answer": 3},
+    {"question": "일정 기간 국내에서 새로 생산된 최종 생산물의 가치 합은?",
+     "options": ["1. 물가지수", "2. 국내총생산(GDP)", "3. 국민총소득(GNI)"], "answer": 2},
+    {"question": "소득이 많을수록 높은 세율을 적용하는 제도는?",
+     "options": ["1. 비례세", "2. 누진세", "3. 역진세"], "answer": 2},
+    {"question": "납세자와 담세자가 다른 세금은?",
+     "options": ["1. 간접세", "2. 직접세", "3. 소득세"], "answer": 1},
+    {"question": "한 기업이 시장을 장악해 가격을 결정하는 시장은?",
+     "options": ["1. 완전경쟁시장", "2. 독점시장", "3. 과점시장"], "answer": 2},
+    {"question": "소수 기업이 시장을 지배하는 시장은?",
+     "options": ["1. 독점시장", "2. 과점시장", "3. 완전경쟁시장"], "answer": 2},
+    {"question": "국방처럼 돈을 내지 않은 사람도 이용할 수 있는 재화는?",
+     "options": ["1. 사유재", "2. 공공재", "3. 대체재"], "answer": 2},
+    {"question": "더 적은 기회비용으로 생산 가능한 상품에 집중하는 원리는?",
+     "options": ["1. 절대우위", "2. 보호무역", "3. 비교우위"], "answer": 3},
+    {"question": "수입품에 높은 관세를 부과해 자국 산업을 보호하는 정책은?",
+     "options": ["1. 자유무역", "2. 보호무역", "3. 공정무역"], "answer": 2},
+    {"question": "원금과 이자에 또 이자가 붙는 계산 방식은?",
+     "options": ["1. 단리", "2. 복리", "3. 마이너스 금리"], "answer": 2},
+    {"question": "기업이 이익의 일부를 주주에게 나눠주는 돈은?",
+     "options": ["1. 이자", "2. 배당금", "3. 세금"], "answer": 2},
+    {"question": "경제 상태가 호황과 침체를 반복하는 현상은?",
+     "options": ["1. 경제성장", "2. 경기변동", "3. 인플레이션"], "answer": 2},
+    {"question": "일할 의지가 있지만 일자리를 구하지 못한 상태는?",
+     "options": ["1. 고용", "2. 실업", "3. 은퇴"], "answer": 2},
+    {"question": "발명·상표 등에 대한 독점적 권리는?",
+     "options": ["1. 소유권", "2. 지적재산권", "3. 영업권"], "answer": 2},
+    {"question": "시장에서 가격이 수급을 조절하는 기능을 빗댄 말은?",
+     "options": ["1. 보이지 않는 손", "2. 보이는 손", "3. 황금 손"], "answer": 1},
+    {"question": "일반적으로 예금 금리와 대출 금리 중 더 높은 것은?",
+     "options": ["1. 예금 금리", "2. 대출 금리", "3. 항상 같다"], "answer": 2},
+    {"question": "정부가 세금을 줄이고 지출을 늘려 경제를 살리는 정책은?",
+     "options": ["1. 긴축 재정", "2. 확대 재정", "3. 통화 정책"], "answer": 2},
+    {"question": "상승장을 상징하는 동물은?",
+     "options": ["1. 곰(Bear)", "2. 황소(Bull)", "3. 독수리(Eagle)"], "answer": 2},
+    {"question": "하락장을 상징하는 동물은?",
+     "options": ["1. 곰(Bear)", "2. 황소(Bull)", "3. 사자(Lion)"], "answer": 1},
+    {"question": "기업이 처음으로 주식을 공개 발행하는 과정의 약자는?",
+     "options": ["1. GDP", "2. IPO", "3. M&A"], "answer": 2},
+    {"question": "기업 합병·인수를 뜻하는 약자는?",
+     "options": ["1. M&A", "2. IPO", "3. CEO"], "answer": 1},
+
+    # ── 수요와 공급 기본 개념 및 법칙 ──────────────────────────────
+    {"question": "다음 중 '수요'에 대한 설명으로 가장 알맞은 것은?",
+     "options": [
+         "1. 상품을 팔고자 하는 욕구이다.",
+         "2. 구매 능력이 없어도 사고자 하는 마음만 있으면 수요이다.",
+         "3. 일정한 가격에 상품을 사고자 하는 욕구이다.",
+         "4. 생산자가 이윤을 얻기 위해 상품을 시장에 내놓는 것이다.",
+         "5. 가격이 오르면 수요도 함께 증가한다.",
+     ], "answer": 3},
+
+    {"question": "가격과 수요량의 관계를 나타낸 '수요 법칙'으로 올바른 것은?",
+     "options": [
+         "1. 가격이 오르면 수요량은 증가한다.",
+         "2. 가격이 내리면 수요량은 감소한다.",
+         "3. 가격과 수요량은 비례 관계에 있다.",
+         "4. 가격이 오르면 수요량은 감소하고, 가격이 내리면 수요량은 증가한다.",
+         "5. 가격이 변해도 수요량은 변하지 않는다.",
+     ], "answer": 4},
+
+    {"question": "일반적인 수요 곡선의 형태는 어떠한가?",
+     "options": [
+         "1. 우상향하는 형태",
+         "2. 우하향하는 형태",
+         "3. 수평선 형태",
+         "4. 수직선 형태",
+         "5. U자 형태",
+     ], "answer": 2},
+
+    {"question": "다음 중 '공급'에 대한 설명으로 가장 알맞은 것은?",
+     "options": [
+         "1. 소비자가 상품을 구매하고자 하는 욕구이다.",
+         "2. 생산자가 일정한 가격에 상품을 팔고자 하는 욕구이다.",
+         "3. 시장에서 거래되는 상품의 총량을 말한다.",
+         "4. 가격이 낮을수록 공급량은 늘어난다.",
+         "5. 공급은 소비자의 소득 수준에 가장 큰 영향을 받는다.",
+     ], "answer": 2},
+
+    {"question": "가격과 공급량의 관계를 나타낸 '공급 법칙'으로 올바른 것은?",
+     "options": [
+         "1. 가격이 오르면 공급량은 감소한다.",
+         "2. 가격이 내리면 공급량은 증가한다.",
+         "3. 가격이 오르면 공급량은 증가하고, 가격이 내리면 공급량은 감소한다.",
+         "4. 가격과 공급량은 반비례 관계에 있다.",
+         "5. 가격 변화와 상관없이 공급량은 일정하다.",
+     ], "answer": 3},
+
+    {"question": "일반적인 공급 곡선의 형태는 어떠한가?",
+     "options": [
+         "1. 우상향하는 형태",
+         "2. 우하향하는 형태",
+         "3. 수평선 형태",
+         "4. 수직선 형태",
+         "5. S자 형태",
+     ], "answer": 1},
+
+    # ── 시장 균형 가격의 결정 ────────────────────────────────────
+    {"question": "수요량과 공급량이 일치하여 시장에서 거래가 이루어지는 가격을 무엇이라고 하는가?",
+     "options": [
+         "1. 초과 가격",
+         "2. 한계 가격",
+         "3. 균형 가격",
+         "4. 최저 가격",
+         "5. 최고 가격",
+     ], "answer": 3},
+
+    {"question": "균형 가격이 형성되는 지점은 그래프에서 어디인가?",
+     "options": [
+         "1. 수요 곡선의 가장 높은 점",
+         "2. 공급 곡선의 가장 낮은 점",
+         "3. 수요 곡선과 공급 곡선이 만나는 점",
+         "4. 수요 곡선과 X축이 만나는 점",
+         "5. 공급 곡선과 Y축이 만나는 점",
+     ], "answer": 3},
+
+    {"question": "시장 가격이 균형 가격보다 높을 때 나타나는 현상은?",
+     "options": [
+         "1. 초과 수요",
+         "2. 초과 공급",
+         "3. 품귀 현상",
+         "4. 수요량 증가",
+         "5. 공급량 감소",
+     ], "answer": 2},
+
+    {"question": "시장에 초과 공급이 발생했을 때, 가격은 어떻게 변하는가?",
+     "options": [
+         "1. 상승한다.",
+         "2. 하락한다.",
+         "3. 변하지 않는다.",
+         "4. 상승하다가 일정해진다.",
+         "5. 하락하다가 다시 급상승한다.",
+     ], "answer": 2},
+
+    {"question": "시장 가격이 균형 가격보다 낮을 때 나타나는 현상으로 옳은 것은?",
+     "options": [
+         "1. 상품이 남아돈다.",
+         "2. 초과 공급이 발생한다.",
+         "3. 생산자들이 가격을 내리려고 한다.",
+         "4. 수요량이 공급량보다 많은 초과 수요가 발생한다.",
+         "5. 재고가 쌓인다.",
+     ], "answer": 4},
+
+    {"question": "시장에 초과 수요가 발생했을 때 나타나는 결과는?",
+     "options": [
+         "1. 상품의 가격이 하락한다.",
+         "2. 상품이 팔리지 않고 창고에 쌓인다.",
+         "3. 소비자들이 웃돈을 주고서라도 사려고 하여 가격이 상승한다.",
+         "4. 생산자들이 생산량을 대폭 줄인다.",
+         "5. 균형 거래량이 감소한다.",
+     ], "answer": 3},
+
+    # ── 수요의 변동 요인 ─────────────────────────────────────────
+    {"question": "다음 중 '수요의 변동'을 가져오는 요인이 아닌 것은?",
+     "options": [
+         "1. 소비자의 소득 변화",
+         "2. 인구수의 변화",
+         "3. 소비자의 기호 변화",
+         "4. 상품 자체의 가격 변화",
+         "5. 대체재의 가격 변화",
+     ], "answer": 4},
+
+    {"question": "아이스크림에 대한 소비자의 선호도가 크게 높아졌을 때, 나타나는 변화로 옳은 것은?",
+     "options": [
+         "1. 아이스크림 수요 곡선이 왼쪽으로 이동한다.",
+         "2. 아이스크림 수요 곡선이 오른쪽으로 이동한다.",
+         "3. 아이스크림 공급 곡선이 왼쪽으로 이동한다.",
+         "4. 아이스크림 공급 곡선이 오른쪽으로 이동한다.",
+         "5. 수요 곡선 위에서 점만 이동한다.",
+     ], "answer": 2},
+
+    {"question": "사람들의 평균 소득이 증가했을 때, 일반적으로 나타나는 정상재의 시장 변화는?",
+     "options": [
+         "1. 수요 감소",
+         "2. 수요 증가",
+         "3. 공급 감소",
+         "4. 공급 증가",
+         "5. 변화 없음",
+     ], "answer": 2},
+
+    {"question": "커피와 홍차가 대체재 관계에 있을 때, 커피 가격이 크게 상승하면 홍차 시장에는 어떤 변화가 생기는가?",
+     "options": [
+         "1. 홍차 수요 감소",
+         "2. 홍차 수요 증가",
+         "3. 홍차 공급 감소",
+         "4. 홍차 공급 증가",
+         "5. 홍차의 가격 하락",
+     ], "answer": 2},
+
+    {"question": "삼겹살과 상추가 보완재 관계에 있을 때, 삼겹살 가격이 하락하면 상추 시장에는 어떤 변화가 생기는가?",
+     "options": [
+         "1. 상추 수요 증가",
+         "2. 상추 수요 감소",
+         "3. 상추 공급 증가",
+         "4. 상추 공급 감소",
+         "5. 아무런 변화가 없다.",
+     ], "answer": 1},
+
+    {"question": "미래에 스마트폰 가격이 오를 것이라고 예상될 때, 현재 스마트폰 시장에서 나타날 현상은?",
+     "options": [
+         "1. 현재 수요가 감소한다.",
+         "2. 현재 수요가 증가한다.",
+         "3. 현재 공급이 증가한다.",
+         "4. 수요 곡선이 왼쪽으로 이동한다.",
+         "5. 균형 가격이 하락한다.",
+     ], "answer": 2},
+
+    # ── 공급의 변동 요인 ─────────────────────────────────────────
+    {"question": "다음 중 '공급의 변동'을 가져오는 요인이 아닌 것은?",
+     "options": [
+         "1. 생산 요소(원자재) 가격의 변화",
+         "2. 생산 기술의 발달",
+         "3. 소비자의 소득 변화",
+         "4. 생산자(기업) 수의 변화",
+         "5. 미래 가격에 대한 생산자의 예상",
+     ], "answer": 3},
+
+    {"question": "빵을 만드는 원재료인 밀가루 가격이 하락했을 때, 빵 시장에 나타나는 변화는?",
+     "options": [
+         "1. 빵의 수요 증가",
+         "2. 빵의 수요 감소",
+         "3. 빵의 공급 증가",
+         "4. 빵의 공급 감소",
+         "5. 빵의 가격 상승",
+     ], "answer": 3},
+
+    {"question": "반도체를 생산하는 획기적인 신기술이 발달했을 때, 반도체 시장의 공급 곡선은 어떻게 되는가?",
+     "options": [
+         "1. 왼쪽으로 이동한다.",
+         "2. 오른쪽으로 이동한다.",
+         "3. 수직선으로 변한다.",
+         "4. 수평선으로 변한다.",
+         "5. 변동이 없다.",
+     ], "answer": 2},
+
+    {"question": "시장에 마스크를 생산하는 기업의 수가 급격히 늘어났을 때, 마스크 시장에 나타나는 변화는?",
+     "options": [
+         "1. 수요 증가",
+         "2. 수요 감소",
+         "3. 공급 증가",
+         "4. 공급 감소",
+         "5. 균형 가격 상승",
+     ], "answer": 3},
+
+    {"question": "배추 농부들이 다음 달에 배추 가격이 크게 하락할 것이라고 예상한다면, 현재 배추 시장의 공급은 어떻게 변하는가?",
+     "options": [
+         "1. 공급을 줄인다. (공급 감소)",
+         "2. 공급을 늘린다. (공급 증가)",
+         "3. 공급을 완전히 중단한다.",
+         "4. 수요가 폭증한다.",
+         "5. 아무 변화가 없다.",
+     ], "answer": 2},
+
+    # ── 시장 균형의 변동 종합 ────────────────────────────────────
+    {"question": "수요가 증가하고 공급은 일정할 때, 시장 균형 가격과 균형 거래량은 어떻게 변하는가?",
+     "options": [
+         "1. 균형 가격 상승, 균형 거래량 증가",
+         "2. 균형 가격 하락, 균형 거래량 증가",
+         "3. 균형 가격 상승, 균형 거래량 감소",
+         "4. 균형 가격 하락, 균형 거래량 감소",
+         "5. 불변",
+     ], "answer": 1},
+
+    {"question": "수요가 감소하고 공급은 일정할 때, 나타나는 시장의 변화는?",
+     "options": [
+         "1. 균형 가격 상승, 균형 거래량 증가",
+         "2. 균형 가격 상승, 균형 거래량 감소",
+         "3. 균형 가격 하락, 균형 거래량 증가",
+         "4. 균형 가격 하락, 균형 거래량 감소",
+         "5. 거래량만 변동",
+     ], "answer": 4},
+
+    {"question": "공급이 증가하고 수요는 일정할 때, 나타나는 시장의 변화는?",
+     "options": [
+         "1. 균형 가격 상승, 균형 거래량 증가",
+         "2. 균형 가격 상승, 균형 거래량 감소",
+         "3. 균형 가격 하락, 균형 거래량 증가",
+         "4. 균형 가격 하락, 균형 거래량 감소",
+         "5. 가격만 변동",
+     ], "answer": 3},
+
+    {"question": "공급이 감소하고 수요는 일정할 때, 시장 균형 가격과 균형 거래량의 변화는?",
+     "options": [
+         "1. 균형 가격 상승, 균형 거래량 증가",
+         "2. 균형 가격 상승, 균형 거래량 감소",
+         "3. 균형 가격 하락, 균형 거래량 증가",
+         "4. 균형 가격 하락, 균형 거래량 감소",
+         "5. 불변",
+     ], "answer": 2},
+
+    {"question": "[응용] 무더위로 에어컨 수요가 늘고 동시에 핵심 부품 가격 상승으로 생산 비용도 증가했다. 에어컨 시장의 '균형 가격'은 어떻게 변할까?",
+     "options": [
+         "1. 반드시 하락한다.",
+         "2. 반드시 상승한다.",
+         "3. 변함없다.",
+         "4. 가격은 하락하고 거래량은 알 수 없다.",
+         "5. 거래량은 증가하고 가격은 알 수 없다.",
+     ], "answer": 2},
+
+    {"question": "[응용] 우유 가격이 인하되자, 빵의 소비가 함께 늘어났다. 두 재화의 관계와 빵 시장의 변화로 옳은 것은?",
+     "options": [
+         "1. 대체재 관계 / 빵의 수요 증가",
+         "2. 대체재 관계 / 빵의 공급 증가",
+         "3. 보완재 관계 / 빵의 수요 증가",
+         "4. 보완재 관계 / 빵의 공급 감소",
+         "5. 보완재 관계 / 빵의 수요 감소",
+     ], "answer": 3},
+
+    {"question": "[종합] 다음 중 시장에서 '균형 가격이 하락'하는 경우를 모두 고르면? (ㄱ.수요 증가  ㄴ.수요 감소  ㄷ.공급 증가  ㄹ.공급 감소)",
+     "options": [
+         "1. ㄱ, ㄷ",
+         "2. ㄴ, ㄷ",
+         "3. ㄱ, ㄹ",
+         "4. ㄴ, ㄹ",
+         "5. ㄷ, ㄹ",
+     ], "answer": 2},
+]
+
+
 class MockInvestmentGame:
     def __init__(self, team_names, total_turns=12, start_date_choice='random'):
         self.total_turns = total_turns
@@ -284,75 +629,13 @@ class MockInvestmentGame:
         self.all_tickers = self.tradeable_tickers + ['USDKRW=X']
         self.market_data = pd.DataFrame()
 
-        self.quizzes = [
-            {"question": "선택으로 인해 포기해야 하는 대안 중 가장 가치 있는 것은?",
-             "options": ["1. 매몰비용", "2. 기회비용", "3. 한계비용"], "answer": 2},
-            {"question": "사람들의 욕망은 무한하지만 자원은 한정된 상태는?",
-             "options": ["1. 희소성", "2. 효율성", "3. 형평성"], "answer": 1},
-            {"question": "가격이 오르면 수요량은 어떻게 될까요?",
-             "options": ["1. 증가한다", "2. 감소한다", "3. 변동 없다"], "answer": 2},
-            {"question": "콜라와 사이다처럼 한 재화 가격 상승 시 다른 재화 수요가 늘어나는 관계는?",
-             "options": ["1. 보완재", "2. 정상재", "3. 대체재"], "answer": 3},
-            {"question": "스마트폰과 충전기처럼 함께 소비할 때 만족감이 커지는 재화는?",
-             "options": ["1. 보완재", "2. 대체재", "3. 열등재"], "answer": 1},
-            {"question": "수요량과 공급량이 일치하여 결정되는 가격은?",
-             "options": ["1. 최고가격", "2. 균형가격", "3. 최저가격"], "answer": 2},
-            {"question": "물가가 지속적으로 오르고 화폐 가치가 떨어지는 현상은?",
-             "options": ["1. 디플레이션", "2. 스태그플레이션", "3. 인플레이션"], "answer": 3},
-            {"question": "인플레이션 시 유리한 사람은?",
-             "options": ["1. 현금 보유자", "2. 돈을 빌린 사람", "3. 돈을 빌려준 사람"], "answer": 2},
-            {"question": "물가가 지속적으로 하락하며 경제가 침체되는 현상은?",
-             "options": ["1. 인플레이션", "2. 디플레이션", "3. 리디노미네이션"], "answer": 2},
-            {"question": "중앙은행이 통화량을 줄이려 할 때 취할 행동은?",
-             "options": ["1. 기준금리 인상", "2. 기준금리 인하", "3. 세금 감면"], "answer": 1},
-            {"question": "외국 화폐에 대한 자국 화폐의 교환 비율은?",
-             "options": ["1. 금리", "2. 물가", "3. 환율"], "answer": 3},
-            {"question": "원/달러 환율이 올랐을 때 유리한 사람은?",
-             "options": ["1. 해외 여행객", "2. 수입업자", "3. 수출업자"], "answer": 3},
-            {"question": "원/달러 환율이 떨어졌을 때 피해를 볼 사람은?",
-             "options": ["1. 유학생 부모", "2. 부품 수입 기업", "3. 수출 기업"], "answer": 3},
-            {"question": "일정 기간 국내에서 새로 생산된 최종 생산물의 가치 합은?",
-             "options": ["1. 물가지수", "2. 국내총생산(GDP)", "3. 국민총소득(GNI)"], "answer": 2},
-            {"question": "소득이 많을수록 높은 세율을 적용하는 제도는?",
-             "options": ["1. 비례세", "2. 누진세", "3. 역진세"], "answer": 2},
-            {"question": "납세자와 담세자가 다른 세금은?",
-             "options": ["1. 간접세", "2. 직접세", "3. 소득세"], "answer": 1},
-            {"question": "한 기업이 시장을 장악해 가격을 결정하는 시장은?",
-             "options": ["1. 완전경쟁시장", "2. 독점시장", "3. 과점시장"], "answer": 2},
-            {"question": "소수 기업이 시장을 지배하는 시장은?",
-             "options": ["1. 독점시장", "2. 과점시장", "3. 완전경쟁시장"], "answer": 2},
-            {"question": "국방처럼 돈을 내지 않은 사람도 이용할 수 있는 재화는?",
-             "options": ["1. 사유재", "2. 공공재", "3. 대체재"], "answer": 2},
-            {"question": "더 적은 기회비용으로 생산 가능한 상품에 집중하는 원리는?",
-             "options": ["1. 절대우위", "2. 보호무역", "3. 비교우위"], "answer": 3},
-            {"question": "수입품에 높은 관세를 부과해 자국 산업을 보호하는 정책은?",
-             "options": ["1. 자유무역", "2. 보호무역", "3. 공정무역"], "answer": 2},
-            {"question": "원금과 이자에 또 이자가 붙는 계산 방식은?",
-             "options": ["1. 단리", "2. 복리", "3. 마이너스 금리"], "answer": 2},
-            {"question": "기업이 이익의 일부를 주주에게 나눠주는 돈은?",
-             "options": ["1. 이자", "2. 배당금", "3. 세금"], "answer": 2},
-            {"question": "경제 상태가 호황과 침체를 반복하는 현상은?",
-             "options": ["1. 경제성장", "2. 경기변동", "3. 인플레이션"], "answer": 2},
-            {"question": "일할 의지가 있지만 일자리를 구하지 못한 상태는?",
-             "options": ["1. 고용", "2. 실업", "3. 은퇴"], "answer": 2},
-            {"question": "발명·상표 등에 대한 독점적 권리는?",
-             "options": ["1. 소유권", "2. 지적재산권", "3. 영업권"], "answer": 2},
-            {"question": "시장에서 가격이 수급을 조절하는 기능을 빗댄 말은?",
-             "options": ["1. 보이지 않는 손", "2. 보이는 손", "3. 황금 손"], "answer": 1},
-            {"question": "일반적으로 예금 금리와 대출 금리 중 더 높은 것은?",
-             "options": ["1. 예금 금리", "2. 대출 금리", "3. 항상 같다"], "answer": 2},
-            {"question": "정부가 세금을 줄이고 지출을 늘려 경제를 살리는 정책은?",
-             "options": ["1. 긴축 재정", "2. 확대 재정", "3. 통화 정책"], "answer": 2},
-            {"question": "상승장을 상징하는 동물은?",
-             "options": ["1. 곰(Bear)", "2. 황소(Bull)", "3. 독수리(Eagle)"], "answer": 2},
-            {"question": "하락장을 상징하는 동물은?",
-             "options": ["1. 곰(Bear)", "2. 황소(Bull)", "3. 사자(Lion)"], "answer": 1},
-            {"question": "기업이 처음으로 주식을 공개 발행하는 과정의 약자는?",
-             "options": ["1. GDP", "2. IPO", "3. M&A"], "answer": 2},
-            {"question": "기업 합병·인수를 뜻하는 약자는?",
-             "options": ["1. M&A", "2. IPO", "3. CEO"], "answer": 1},
-        ]
-        random.shuffle(self.quizzes)
+        # ── 팀별 독립 퀴즈 덱 생성 ──────────────────────────────
+        # 퀴즈 풀을 팀 수만큼 복제 후 각각 독립적으로 섞음
+        self.team_quizzes = {}
+        for t in self.teams:
+            deck = QUIZ_POOL.copy()
+            random.shuffle(deck)
+            self.team_quizzes[t.name] = deck
 
     def load_market_data(self):
         end_date = self.current_date + relativedelta(months=self.total_turns + 2)
@@ -450,6 +733,13 @@ class MockInvestmentGame:
         self.current_turn += 1
         self.current_date += relativedelta(months=1)
 
+    def pop_team_quiz(self, team_name):
+        """해당 팀의 퀴즈 덱에서 다음 퀴즈를 꺼냄"""
+        deck = self.team_quizzes.get(team_name, [])
+        if deck:
+            return deck.pop()
+        return None
+
 
 # ==========================================
 # 4. UI 헬퍼
@@ -484,12 +774,21 @@ def show_portfolio(team, get_price_func, current_date):
                      use_container_width=True, hide_index=True)
 
 
-def show_fx_box(rate: float):
+def show_fx_box(rate: float, krw_balance: float, usd_balance: float):
+    """환율 정보 + 최대 매수/매도 가능 금액 표시"""
     if rate > 0:
+        buy_rate = rate * 1.05
+        sell_rate = rate * 0.95
+        max_buy_usd = krw_balance / buy_rate  # 원화로 살 수 있는 최대 달러
+        max_sell_krw = usd_balance * sell_rate  # 달러 전부 팔면 받는 원화
         st.info(
             f"💱 **현재 환율: {rate:,.2f} 원/달러**  \n"
-            f"달러 매수 적용가 **{rate*1.05:,.2f}원** (+5%) │ "
-            f"달러 매도 적용가 **{rate*0.95:,.2f}원** (-5%)"
+            f"달러 매수 적용가 **{buy_rate:,.2f}원** (+5%) │ "
+            f"달러 매도 적용가 **{sell_rate:,.2f}원** (-5%)  \n"
+            f"최대 매수 가능 달러: **${max_buy_usd:,.0f}** "
+            f"(원화 잔고 {krw_balance:,.0f}원 기준)  \n"
+            f"달러 전량 매도 시 수령액: **{max_sell_krw:,.0f}원** "
+            f"(${usd_balance:,.2f} 기준)"
         )
     else:
         st.warning("환율 데이터 없음 — 기본값 1,300원 적용")
@@ -516,7 +815,37 @@ def quantity_input(label, key, max_val):
 
 
 # ==========================================
-# 5. 메인 앱
+# 5. 퀴즈 세션 상태 초기화 헬퍼
+# ==========================================
+def init_team_quiz_state(game):
+    """매 턴 시작 시 팀별 퀴즈 세션 상태가 없으면 초기화"""
+    if 'team_quiz_state' not in st.session_state:
+        st.session_state.team_quiz_state = {}
+
+    for team in game.teams:
+        tname = team.name
+        if tname not in st.session_state.team_quiz_state:
+            st.session_state.team_quiz_state[tname] = {
+                'current_quiz': game.pop_team_quiz(tname),
+                'answered': False,
+                'news_unlocked': False,
+            }
+
+
+def advance_team_quizzes(game):
+    """다음 턴으로 넘어갈 때 모든 팀의 퀴즈 상태를 리셋하고 새 퀴즈 배정"""
+    st.session_state.team_quiz_state = {}
+    for team in game.teams:
+        tname = team.name
+        st.session_state.team_quiz_state[tname] = {
+            'current_quiz': game.pop_team_quiz(tname),
+            'answered': False,
+            'news_unlocked': False,
+        }
+
+
+# ==========================================
+# 6. 메인 앱
 # ==========================================
 def main():
     st.set_page_config(page_title="글로벌 모의투자 게임", layout="wide")
@@ -546,9 +875,7 @@ def main():
                     game.load_market_data()
                     st.session_state.game = game
                     st.session_state.game_over = False
-                    st.session_state.quiz_answered = False
-                    st.session_state.news_unlocked = False
-                    st.session_state.current_quiz = game.quizzes.pop() if game.quizzes else None
+                    # 팀별 퀴즈 상태는 본 게임 진입 시 init_team_quiz_state 에서 초기화
                     st.session_state.game_started = True
                 st.rerun()
         return
@@ -556,13 +883,16 @@ def main():
     # ── 본 게임 ───────────────────────────────────────────
     game = st.session_state.game
 
+    # 팀별 퀴즈 세션 상태 초기화 (처음 진입 시 1회)
+    init_team_quiz_state(game)
+
     with st.sidebar:
         st.markdown("### ⚙️ 메뉴")
         if st.button("게임 종료 (로비로)"):
             st.session_state.clear()
             st.rerun()
 
-    # 종료 화면
+    # ── 종료 화면 ─────────────────────────────────────────
     if st.session_state.get('game_over', False) or game.current_turn > game.total_turns:
         st.header("🏁 게임 종료!")
         results = [(t.name, t.get_total_value_krw(game.get_price, game.current_date)) for t in game.teams]
@@ -579,44 +909,53 @@ def main():
             """)
         return
 
-    # 턴 헤더
+    # ── 턴 헤더 ──────────────────────────────────────────
     d = game.current_date
     st.header(f"턴 {game.current_turn} / {game.total_turns}  —  {d.year}년 {d.month}월")
     st.markdown("---")
 
-    # ── 퀴즈 & 뉴스 ──────────────────────────────────────
-    st.subheader("📰 이번 달 경제 퀴즈 & 뉴스")
-    quiz = st.session_state.current_quiz
-
-    if quiz:
-        if not st.session_state.quiz_answered:
-            st.info("퀴즈를 맞히면 이번 달 핵심 경제 뉴스가 공개됩니다!")
-            st.write(f"**Q. {quiz['question']}**")
-            choice = st.radio("정답:", quiz['options'], index=0,
-                              key=f"quiz_{game.current_turn}")
-            if st.button("제출"):
-                st.session_state.quiz_answered = True
-                st.session_state.news_unlocked = (int(choice.split(".")[0]) == quiz['answer'])
-                st.rerun()
-        else:
-            if st.session_state.news_unlocked:
-                st.success(f"🎉 정답! — {d.year}년 {d.month}월 주요 경제 뉴스")
-                st.markdown(get_news(d.year, d.month))
-            else:
-                st.error("❌ 오답. 이번 달 뉴스는 공개되지 않습니다.")
-    else:
-        st.info("퀴즈가 모두 소진되었습니다.")
-
-    st.markdown("---")
-
     # ── 팀 탭 ─────────────────────────────────────────────
     tabs = st.tabs([t.name for t in game.teams])
+
     for i, team in enumerate(game.teams):
         with tabs[i]:
             if team.is_bankrupt:
                 st.error("💀 파산 — 자산이 초기 자본의 10% 미만입니다.")
                 continue
 
+            # ── 팀별 퀴즈 & 뉴스 ──────────────────────────
+            tstate = st.session_state.team_quiz_state[team.name]
+            quiz = tstate['current_quiz']
+
+            with st.container():
+                st.subheader(f"📰 {team.name} — 경제 퀴즈 & 뉴스")
+                if quiz:
+                    if not tstate['answered']:
+                        st.info("퀴즈를 맞히면 이번 달 핵심 경제 뉴스가 공개됩니다!")
+                        st.write(f"**Q. {quiz['question']}**")
+                        choice = st.radio(
+                            "정답을 선택하세요:",
+                            quiz['options'],
+                            index=0,
+                            key=f"quiz_{safe_key(team.name)}_{game.current_turn}",
+                        )
+                        if st.button("제출", key=f"quiz_submit_{safe_key(team.name)}_{game.current_turn}"):
+                            tstate['answered'] = True
+                            tstate['news_unlocked'] = (int(choice.split(".")[0]) == quiz['answer'])
+                            st.rerun()
+                    else:
+                        if tstate['news_unlocked']:
+                            st.success(f"🎉 정답! — {d.year}년 {d.month}월 주요 경제 뉴스")
+                            st.markdown(get_news(d.year, d.month))
+                        else:
+                            correct_opt = quiz['options'][quiz['answer'] - 1]
+                            st.error(f"❌ 오답. 정답은 **{correct_opt}** 이었습니다. 이번 달 뉴스는 공개되지 않습니다.")
+                else:
+                    st.info("퀴즈가 모두 소진되었습니다.")
+
+            st.markdown("---")
+
+            # ── 자산 현황 ──────────────────────────────────
             total = team.get_total_value_krw(game.get_price, game.current_date)
             st.metric("총 자산 (원화 환산)", f"{total:,.0f} 원")
             ca, cb = st.columns(2)
@@ -629,7 +968,7 @@ def main():
 
             col_trade, col_fx = st.columns(2)
 
-            # ── 주식 거래 ──
+            # ── 주식 거래 ──────────────────────────────────
             with col_trade:
                 st.write("**📈 주식 거래**")
                 ticker = st.selectbox(
@@ -641,62 +980,106 @@ def main():
                 price_now = game.get_price(ticker, game.current_date)
                 is_kr = ticker.endswith('.KS')
                 bal = team.krw_balance if is_kr else team.usd_balance
-                max_buy = max(1, int(bal / price_now)) if price_now > 0 else 1
 
-                qty = quantity_input(
-                    f"수량 (최대 {max_buy:,}주)",
-                    key=f"qty_{safe_key(team.name)}_{safe_key(ticker)}_{game.current_turn}",
+                # ---- 매수 섹션 ----
+                st.markdown("**🟢 매수**")
+                max_buy = max(1, int(bal / price_now)) if price_now > 0 else 1
+                buy_qty = quantity_input(
+                    f"매수 수량 (최대 {max_buy:,}주)",
+                    key=f"buyqty_{safe_key(team.name)}_{safe_key(ticker)}_{game.current_turn}",
                     max_val=max_buy,
                 )
-
                 if price_now > 0:
-                    est = price_now * qty
-                    st.caption(f"예상 금액: {'%s원' % f'{est:,.0f}' if is_kr else '$%s' % f'{est:,.2f}'}")
+                    est_buy = price_now * buy_qty
+                    label_buy = f"{est_buy:,.0f}원" if is_kr else f"${est_buy:,.2f}"
+                    st.caption(f"예상 매수 금액: {label_buy}")
 
-                btn1, btn2 = st.columns(2)
-                if btn1.button("매수", key=f"buy_{safe_key(team.name)}"):
-                    ok, msg = game.buy_stock(team, ticker, qty)
-                    if ok:
-                        st.success(msg)
-                    else:
-                        st.error(msg)
-                if btn2.button("매도", key=f"sell_{safe_key(team.name)}"):
-                    ok, msg = game.sell_stock(team, ticker, qty)
+                if st.button("매수 실행", key=f"buy_{safe_key(team.name)}_{game.current_turn}"):
+                    ok, msg = game.buy_stock(team, ticker, buy_qty)
                     if ok:
                         st.success(msg)
                     else:
                         st.error(msg)
 
-            # ── 환전 ──
+                st.markdown("")  # 간격
+
+                # ---- 매도 섹션 ----
+                st.markdown("**🔴 매도**")
+                held = team.portfolio.get(ticker, {}).get('shares', 0)
+                if held > 0:
+                    sell_qty = quantity_input(
+                        f"매도 수량 (보유 {held:,}주)",
+                        key=f"sellqty_{safe_key(team.name)}_{safe_key(ticker)}_{game.current_turn}",
+                        max_val=held,
+                    )
+                    if price_now > 0:
+                        est_sell = price_now * sell_qty
+                        label_sell = f"{est_sell:,.0f}원" if is_kr else f"${est_sell:,.2f}"
+                        st.caption(f"예상 매도 금액: {label_sell}")
+
+                    if st.button("매도 실행", key=f"sell_{safe_key(team.name)}_{game.current_turn}"):
+                        ok, msg = game.sell_stock(team, ticker, sell_qty)
+                        if ok:
+                            st.success(msg)
+                        else:
+                            st.error(msg)
+                else:
+                    st.caption("⚪ 선택한 종목의 보유 수량이 없습니다.")
+
+            # ── 환전 ──────────────────────────────────────
             with col_fx:
                 st.write("**💱 환전**")
-                show_fx_box(game.get_price('USDKRW=X', game.current_date))
+                rate_now = game.get_price('USDKRW=X', game.current_date)
+                show_fx_box(rate_now, team.krw_balance, team.usd_balance)
+
+                # 원화로 살 수 있는 최대 달러 계산 (입력 기본값에 활용)
+                buy_rate_applied = (rate_now * 1.05) if rate_now > 0 else 1365.0
+                max_buyable_usd = max(100.0, (team.krw_balance / buy_rate_applied) // 100 * 100)
+
                 fx_amt = st.number_input(
                     "환전 금액 (달러 기준)",
-                    min_value=100.0, step=100.0,
+                    min_value=100.0,
+                    max_value=float(max(100.0, team.krw_balance / buy_rate_applied + team.usd_balance)),
+                    step=100.0,
+                    value=min(1000.0, max_buyable_usd),
                     key=f"fx_{safe_key(team.name)}",
                 )
                 f1, f2 = st.columns(2)
-                if f1.button("달러 매수 →", key=f"buyfx_{safe_key(team.name)}"):
+                if f1.button("달러 매수 →", key=f"buyfx_{safe_key(team.name)}_{game.current_turn}"):
                     ok, msg = game.exchange_currency(team, 'KRW_TO_USD', fx_amt)
                     if ok:
                         st.success(msg)
                     else:
                         st.error(msg)
-                if f2.button("← 달러 매도", key=f"sellfx_{safe_key(team.name)}"):
+                if f2.button("← 달러 매도", key=f"sellfx_{safe_key(team.name)}_{game.current_turn}"):
                     ok, msg = game.exchange_currency(team, 'USD_TO_KRW', fx_amt)
                     if ok:
                         st.success(msg)
                     else:
                         st.error(msg)
 
-    # ── 다음 턴 ──
+    # ── 다음 턴 ──────────────────────────────────────────
     st.markdown("---")
-    if st.button("⏭️ 다음 턴 (1개월 후)"):
+
+    # 모든 팀이 퀴즈를 제출했는지 확인
+    all_answered = all(
+        st.session_state.team_quiz_state.get(t.name, {}).get('answered', False)
+        for t in game.teams
+        if not t.is_bankrupt
+    )
+    if not all_answered:
+        unanswered = [
+            t.name for t in game.teams
+            if not t.is_bankrupt and
+            not st.session_state.team_quiz_state.get(t.name, {}).get('answered', False)
+        ]
+        st.warning(f"⏳ 아직 퀴즈를 제출하지 않은 팀: **{', '.join(unanswered)}**  \n"
+                   f"모든 팀이 퀴즈를 제출해야 다음 턴으로 넘어갈 수 있습니다.")
+
+    next_btn_disabled = not all_answered
+    if st.button("⏭️ 다음 턴 (1개월 후)", disabled=next_btn_disabled):
         game.next_turn()
-        st.session_state.quiz_answered = False
-        st.session_state.news_unlocked = False
-        st.session_state.current_quiz = game.quizzes.pop() if game.quizzes else None
+        advance_team_quizzes(game)
         if game.current_turn > game.total_turns:
             st.session_state.game_over = True
         st.rerun()
